@@ -24,6 +24,7 @@ export default {
     return {
       departements: undefined,
       regions: undefined,
+      hoveredStateId: null,
       centers: [],
       // dummy example data filled later
       regionsAides: {
@@ -40,6 +41,7 @@ export default {
       // add regions source and layers
       map.addSource('regions', {
         type: 'geojson',
+        generateId: true,
         data: this.regions
       })
       map.addLayer({
@@ -50,7 +52,11 @@ export default {
         paint: {
           'fill-color': '#2a4ba9',
           'fill-outline-color': '#627BC1',
-          'fill-opacity': 0.2
+          'fill-opacity': ['case',
+            ['boolean', ['feature-state', 'hover'], false],
+            0.2,
+            0
+          ]
         }
       })
       map.addLayer({
@@ -96,10 +102,14 @@ export default {
         }
       })
       map.on('click', 'regions-fill', this.onRegionClick)
+      // hover
+      map.on('mousemove', 'regions-fill', e => { this.onMouseMove(e, 'regions') })
+      map.on('mouseleave', 'regions-fill', e => { this.onMouseLeave(e, 'regions') })
 
       // add departements source (empty at first) and layers
       map.addSource('departements', {
         type: 'geojson',
+        generateId: true,
         data: {
           type: 'FeatureCollection',
           features: []
@@ -155,6 +165,24 @@ export default {
     },
     getRandomInteger () {
       return Math.round(Math.random() * (1000 - 10) + 10)
+    },
+    onMouseMove (event, source) {
+      const canvas = map.getCanvas()
+      canvas.style.cursor = 'pointer'
+      if (event.features.length > 0) {
+        if (this.hoveredStateId !== null) {
+          map.setFeatureState({ source, id: this.hoveredStateId }, { hover: false }) // clean all sources to prevent error
+        }
+        this.hoveredStateId = event.features[0].id
+        map.setFeatureState({ source, id: this.hoveredStateId }, { hover: true })
+      }
+    },
+    onMouseLeave (event, source) {
+      const canvas = map.getCanvas()
+      canvas.style.cursor = ''
+      if (this.hoveredStateId !== null) {
+        map.setFeatureState({ source, id: this.hoveredStateId }, { hover: false })
+      }
     }
   },
   mounted () {
