@@ -4,11 +4,7 @@
       accessToken=""
       :map-options="{
         style: 'https://etalab-tiles.fr/styles/osm-bright/style.json',
-        bounds: [
-          [-3.079, 42.173],
-          [9.047, 49.963]
-        ],
-        zoom: 5,
+        bounds: [-5.141277, 41.333907, 9.560053, 51.088991],
       }"
       @map-load="loaded"
     />
