@@ -24,7 +24,12 @@ export default {
     return {
       departements: undefined,
       regions: undefined,
-      centers: []
+      centers: [],
+      // dummy example data filled later
+      regionsAides: {
+        type: 'FeatureCollection',
+        features: []
+      }
     }
   },
   methods: {
@@ -56,6 +61,38 @@ export default {
         paint: {
           'line-color': '#627BC1',
           'line-width': 1
+        }
+      })
+      // regions aides
+      map.addSource('regions-aides', {
+        type: 'geojson',
+        data: this.regionsAides
+      })
+      map.addLayer({
+        id: 'regions-aides',
+        type: 'circle',
+        source: 'regions-aides',
+        paint: {
+          'circle-opacity': 0.6,
+          'circle-color': 'grey',
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['sqrt', ['number', ['get', 'montantAide']]],
+            0,
+            10,
+            100,
+            70
+          ]
+        }
+      })
+      map.addLayer({
+        id: 'regions-aides-montants',
+        type: 'symbol',
+        source: 'regions-aides',
+        layout: {
+          'text-field': '{montantAide}k€',
+          'text-size': 14
         }
       })
       map.on('click', 'regions-fill', this.onRegionClick)
@@ -115,6 +152,9 @@ export default {
     fit (geojson) {
       var _bbox = bbox(geojson)
       map.fitBounds(_bbox, { padding: 20, animate: true })
+    },
+    getRandomInteger () {
+      return Math.round(Math.random() * (1000 - 10) + 10)
     }
   },
   mounted () {
@@ -123,6 +163,20 @@ export default {
     })
     this.$http.get('/geodata/regions-100m.geojson').then(res => {
       this.regions = res.body
+      // fill dummy data for aides
+      this.regionsAides.features = this.regions.features.map(reg => {
+        const center = this.centers[`REG-${reg.properties.code}`]
+        return {
+          type: 'Feature',
+          properties: {
+            montantAide: this.getRandomInteger()
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: center
+          }
+        }
+      })
     })
     this.$http.get('/geodata/departements-100m.geojson').then(res => {
       this.departements = res.body
