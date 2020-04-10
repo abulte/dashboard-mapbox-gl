@@ -22,9 +22,13 @@ export default {
   components: { Mapbox },
   data () {
     return {
-      departements: undefined,
-      regions: undefined,
-      hoveredStateId: null,
+      departements: null,
+      regions: null,
+      hoveredStateId: {
+        regions: null,
+        departements: null
+      },
+      hoverableSources: ['regions', 'departements'],
       centers: [],
       // dummy example data filled later
       regionsAides: {
@@ -123,7 +127,11 @@ export default {
         paint: {
           'fill-color': '#2a4ba9',
           'fill-outline-color': '#627BC1',
-          'fill-opacity': 0.2
+          'fill-opacity': ['case',
+            ['boolean', ['feature-state', 'hover'], false],
+            0.2,
+            0
+          ]
         }
       })
       map.addLayer({
@@ -137,6 +145,9 @@ export default {
         }
       })
       map.on('click', 'departements-fill', this.onDepartementClick)
+      // hover
+      map.on('mousemove', 'departements-fill', e => { this.onMouseMove(e, 'departements') })
+      map.on('mouseleave', 'departements-fill', e => { this.onMouseLeave(e, 'departements') })
     },
     onRegionClick (event) {
       const regionCode = event.features[0].properties.code
@@ -170,18 +181,18 @@ export default {
       const canvas = map.getCanvas()
       canvas.style.cursor = 'pointer'
       if (event.features.length > 0) {
-        if (this.hoveredStateId !== null) {
-          map.setFeatureState({ source, id: this.hoveredStateId }, { hover: false }) // clean all sources to prevent error
+        if (this.hoveredStateId[source] !== null) {
+          map.setFeatureState({ source, id: this.hoveredStateId[source] }, { hover: false }) // clean all sources to prevent error
         }
-        this.hoveredStateId = event.features[0].id
-        map.setFeatureState({ source, id: this.hoveredStateId }, { hover: true })
+        this.hoveredStateId[source] = event.features[0].id
+        map.setFeatureState({ source, id: this.hoveredStateId[source] }, { hover: true })
       }
     },
     onMouseLeave (event, source) {
       const canvas = map.getCanvas()
       canvas.style.cursor = ''
-      if (this.hoveredStateId !== null) {
-        map.setFeatureState({ source, id: this.hoveredStateId }, { hover: false })
+      if (this.hoveredStateId[source] !== null) {
+        map.setFeatureState({ source, id: this.hoveredStateId[source] }, { hover: false })
       }
     }
   },
