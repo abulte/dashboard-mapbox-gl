@@ -50,8 +50,12 @@ export default {
   methods: {
     loaded (_map) {
       map = _map
-      this.initMapRegions()
-      this.initMapDepartements()
+      this.loadingPromises.regions.then(() => {
+        this.initMapRegions()
+      })
+      this.loadingPromises.departements.then(() => {
+        this.initMapDepartements()
+      })
     },
     initMapRegions () {
       map.addSource('regions', {
