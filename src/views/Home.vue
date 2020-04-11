@@ -14,22 +14,31 @@
 <script>
 import Mapbox from 'mapbox-gl-vue'
 import bbox from '@turf/bbox'
+import { layers } from '@/map/layers'
 
 let map
 
 export default {
   name: 'Home',
   components: { Mapbox },
+  computed: {
+    departements () {
+      return this.$store.state.contours.departements
+    },
+    regions () {
+      return this.$store.state.contours.regions
+    },
+    centers () {
+      return this.$store.state.contours.centers
+    }
+  },
   data () {
     return {
-      departements: null,
-      regions: null,
+      loadingData: null,
       hoveredStateId: {
         regions: null,
         departements: null
       },
-      hoverableSources: ['regions', 'departements'],
-      centers: [],
       // dummy example data filled later
       aides: {
         departements: {
@@ -45,72 +54,28 @@ export default {
   },
   methods: {
     loaded (_map) {
-      // NB: this.map = map leads to strange things, use global var instead
       map = _map
-
-      // add regions source and layers
+      console.log('map loaded')
+      this.loadingData.then(() => {
+        console.log('promise resolved')
+        this.initMap()
+      })
+    },
+    initMap () {
       map.addSource('regions', {
         type: 'geojson',
         generateId: true,
         data: this.regions
       })
-      map.addLayer({
-        id: 'regions-fill',
-        type: 'fill',
-        source: 'regions',
-        layout: {},
-        paint: {
-          'fill-color': '#2a4ba9',
-          'fill-outline-color': '#627BC1',
-          'fill-opacity': ['case',
-            ['boolean', ['feature-state', 'hover'], false],
-            0.2,
-            0
-          ]
-        }
-      })
-      map.addLayer({
-        id: 'regions-lines',
-        type: 'line',
-        source: 'regions',
-        layout: {},
-        paint: {
-          'line-color': '#627BC1',
-          'line-width': 1
-        }
-      })
+      map.addLayer(layers.regions)
+      map.addLayer(layers.regionsLines)
       // regions aides
       map.addSource('regions-aides', {
         type: 'geojson',
         data: this.aides.regions
       })
-      map.addLayer({
-        id: 'regions-aides',
-        type: 'circle',
-        source: 'regions-aides',
-        paint: {
-          'circle-opacity': 0.6,
-          'circle-color': 'grey',
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['sqrt', ['number', ['get', 'montantAide']]],
-            0,
-            10,
-            100,
-            70
-          ]
-        }
-      })
-      map.addLayer({
-        id: 'regions-aides-montants',
-        type: 'symbol',
-        source: 'regions-aides',
-        layout: {
-          'text-field': '{montantAide}k€',
-          'text-size': 14
-        }
-      })
+      map.addLayer(layers.regionsAides)
+      map.addLayer(layers.regionsAidesMontants)
       map.on('click', 'regions-fill', this.onRegionClick)
       // hover
       map.on('mousemove', 'regions-fill', e => { this.onMouseMove(e, 'regions') })
@@ -125,67 +90,15 @@ export default {
           features: []
         }
       })
-      map.addLayer({
-        id: 'departements-fill',
-        type: 'fill',
-        source: 'departements',
-        layout: {},
-        paint: {
-          'fill-color': '#2a4ba9',
-          'fill-outline-color': '#627BC1',
-          'fill-opacity': ['case',
-            ['boolean', ['feature-state', 'hover'], false],
-            0.2,
-            0
-          ]
-        }
-      })
-      map.addLayer({
-        id: 'departements-lines',
-        type: 'line',
-        source: 'departements',
-        layout: {},
-        paint: {
-          'line-color': '#627BC1',
-          'line-width': 1
-        }
-      })
+      map.addLayer(layers.departements)
+      map.addLayer(layers.departementsLines)
       // departements aides
       map.addSource('departements-aides', {
         type: 'geojson',
         data: this.aides.departements
       })
-      map.addLayer({
-        id: 'departements-aides',
-        type: 'circle',
-        source: 'departements-aides',
-        layout: {
-          visibility: 'none'
-        },
-        paint: {
-          'circle-opacity': 0.6,
-          'circle-color': 'grey',
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['sqrt', ['number', ['get', 'montantAide']]],
-            0,
-            10,
-            100,
-            70
-          ]
-        }
-      })
-      map.addLayer({
-        id: 'departements-aides-montants',
-        type: 'symbol',
-        source: 'departements-aides',
-        layout: {
-          'text-field': '{montantAide}k€',
-          'text-size': 14,
-          visibility: 'none'
-        }
-      })
+      map.addLayer(layers.departementsAides)
+      map.addLayer(layers.departementsAidesMontants)
       map.on('click', 'departements-fill', this.onDepartementClick)
       // hover
       map.on('mousemove', 'departements-fill', e => { this.onMouseMove(e, 'departements') })
@@ -223,9 +136,6 @@ export default {
       var _bbox = bbox(geojson)
       map.fitBounds(_bbox, { padding: 20, animate: true })
     },
-    getRandomInteger (max) {
-      return Math.round(Math.random() * (max - 10) + 10)
-    },
     onMouseMove (event, source) {
       const canvas = map.getCanvas()
       canvas.style.cursor = 'pointer'
@@ -246,42 +156,7 @@ export default {
     }
   },
   mounted () {
-    this.$http.get('/geodata/centers.json').then(res => {
-      this.centers = res.body
-    })
-    this.$http.get('/geodata/regions-100m.geojson').then(res => {
-      this.regions = res.body
-      // fill dummy data for aides
-      this.aides.regions.features = this.regions.features.map(reg => {
-        const center = this.centers[`REG-${reg.properties.code}`]
-        return {
-          type: 'Feature',
-          properties: {
-            montantAide: this.getRandomInteger(1000)
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: center
-          }
-        }
-      })
-    })
-    this.$http.get('/geodata/departements-100m.geojson').then(res => {
-      this.departements = res.body
-      this.aides.departements.features = this.departements.features.map(dep => {
-        const center = this.centers[`DEP-${dep.properties.code}`]
-        return {
-          type: 'Feature',
-          properties: {
-            montantAide: this.getRandomInteger(100)
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: center
-          }
-        }
-      })
-    })
+    this.loadingData = this.$store.dispatch('getInitialData')
   }
 }
 </script>
