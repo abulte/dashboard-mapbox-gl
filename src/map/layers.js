@@ -13,7 +13,7 @@ const circlePaintAides = {
   'circle-color': '#8393A7',
   'circle-radius': [
     'interpolate', ['linear'],
-    ['*', ['sqrt', ['number', ['get', 'montantMillions']]], 10],
+    ['*', ['sqrt', ['number', ['get', 'montantMillions']]], 8],
     0, 10,
     100, 70
   ]
