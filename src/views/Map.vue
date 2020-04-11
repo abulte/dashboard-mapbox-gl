@@ -19,7 +19,7 @@ import { layers } from '@/map/layers'
 let map
 
 export default {
-  name: 'Home',
+  name: 'Map',
   components: { Mapbox },
   computed: {
     departements () {
