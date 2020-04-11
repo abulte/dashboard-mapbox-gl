@@ -31,9 +31,15 @@ export default {
       hoverableSources: ['regions', 'departements'],
       centers: [],
       // dummy example data filled later
-      regionsAides: {
-        type: 'FeatureCollection',
-        features: []
+      aides: {
+        departements: {
+          type: 'FeatureCollection',
+          features: []
+        },
+        regions: {
+          type: 'FeatureCollection',
+          features: []
+        }
       }
     }
   },
@@ -76,7 +82,7 @@ export default {
       // regions aides
       map.addSource('regions-aides', {
         type: 'geojson',
-        data: this.regionsAides
+        data: this.aides.regions
       })
       map.addLayer({
         id: 'regions-aides',
@@ -144,6 +150,42 @@ export default {
           'line-width': 1
         }
       })
+      // departements aides
+      map.addSource('departements-aides', {
+        type: 'geojson',
+        data: this.aides.departements
+      })
+      map.addLayer({
+        id: 'departements-aides',
+        type: 'circle',
+        source: 'departements-aides',
+        layout: {
+          visibility: 'none'
+        },
+        paint: {
+          'circle-opacity': 0.6,
+          'circle-color': 'grey',
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['sqrt', ['number', ['get', 'montantAide']]],
+            0,
+            10,
+            100,
+            70
+          ]
+        }
+      })
+      map.addLayer({
+        id: 'departements-aides-montants',
+        type: 'symbol',
+        source: 'departements-aides',
+        layout: {
+          'text-field': '{montantAide}k€',
+          'text-size': 14,
+          visibility: 'none'
+        }
+      })
       map.on('click', 'departements-fill', this.onDepartementClick)
       // hover
       map.on('mousemove', 'departements-fill', e => { this.onMouseMove(e, 'departements') })
@@ -152,6 +194,12 @@ export default {
     onRegionClick (event) {
       const regionCode = event.features[0].properties.code
       this.goToRegion(regionCode)
+      this.toggleAidesVisibility('regions', false)
+    },
+    toggleAidesVisibility (layer, isVisible) {
+      const newVisibility = isVisible ? 'visible' : 'none'
+      map.setLayoutProperty(`${layer}-aides`, 'visibility', newVisibility)
+      map.setLayoutProperty(`${layer}-aides-montants`, 'visibility', newVisibility)
     },
     goToRegion (code) {
       const departements = this.departements.features.filter(dpt => {
@@ -165,6 +213,7 @@ export default {
         features: departements
       }
       map.getSource('departements').setData(data)
+      this.toggleAidesVisibility('departements', true)
       this.fit(data)
     },
     onDepartementClick (event) {
@@ -174,8 +223,8 @@ export default {
       var _bbox = bbox(geojson)
       map.fitBounds(_bbox, { padding: 20, animate: true })
     },
-    getRandomInteger () {
-      return Math.round(Math.random() * (1000 - 10) + 10)
+    getRandomInteger (max) {
+      return Math.round(Math.random() * (max - 10) + 10)
     },
     onMouseMove (event, source) {
       const canvas = map.getCanvas()
@@ -203,12 +252,12 @@ export default {
     this.$http.get('/geodata/regions-100m.geojson').then(res => {
       this.regions = res.body
       // fill dummy data for aides
-      this.regionsAides.features = this.regions.features.map(reg => {
+      this.aides.regions.features = this.regions.features.map(reg => {
         const center = this.centers[`REG-${reg.properties.code}`]
         return {
           type: 'Feature',
           properties: {
-            montantAide: this.getRandomInteger()
+            montantAide: this.getRandomInteger(1000)
           },
           geometry: {
             type: 'Point',
@@ -219,6 +268,19 @@ export default {
     })
     this.$http.get('/geodata/departements-100m.geojson').then(res => {
       this.departements = res.body
+      this.aides.departements.features = this.departements.features.map(dep => {
+        const center = this.centers[`DEP-${dep.properties.code}`]
+        return {
+          type: 'Feature',
+          properties: {
+            montantAide: this.getRandomInteger(100)
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: center
+          }
+        }
+      })
     })
   }
 }
