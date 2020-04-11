@@ -37,7 +37,10 @@ export default {
   },
   data () {
     return {
-      loadingData: null,
+      loadingPromises: {
+        departements: null,
+        regions: null
+      },
       hoveredStateId: {
         regions: null,
         departements: null
@@ -47,11 +50,10 @@ export default {
   methods: {
     loaded (_map) {
       map = _map
-      this.loadingData.then(() => {
-        this.initMap()
-      })
+      this.initMapRegions()
+      this.initMapDepartements()
     },
-    initMap () {
+    initMapRegions () {
       map.addSource('regions', {
         type: 'geojson',
         generateId: true,
@@ -70,7 +72,8 @@ export default {
       // hover
       map.on('mousemove', 'regions-fill', e => { this.onMouseMove(e, 'regions') })
       map.on('mouseleave', 'regions-fill', e => { this.onMouseLeave(e, 'regions') })
-
+    },
+    initMapDepartements () {
       // add departements source (empty at first) and layers
       map.addSource('departements', {
         type: 'geojson',
@@ -146,7 +149,10 @@ export default {
     }
   },
   mounted () {
-    this.loadingData = this.$store.dispatch('getRegionsData')
+    this.$store.dispatch('getInitialData').then(() => {
+      this.loadingPromises.regions = this.$store.dispatch('getRegionsData')
+      this.loadingPromises.departements = this.$store.dispatch('getDepartementsData')
+    })
   }
 }
 </script>
@@ -160,7 +166,5 @@ export default {
   position: relative;
   width: 100%;
   height: 100%;
-  /* background-color: #2a4ba9;
-  background-color: #627BC1; */
 }
 </style>

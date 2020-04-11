@@ -24,14 +24,12 @@ export const layers = {
     id: 'regions-fill',
     type: 'fill',
     source: 'regions',
-    layout: {},
     paint: fillPaint
   },
   regionsLines: {
     id: 'regions-lines',
     type: 'line',
     source: 'regions',
-    layout: {},
     paint: {
       'line-color': '#627BC1',
       'line-width': 1
@@ -82,7 +80,7 @@ export const layers = {
     type: 'symbol',
     source: 'departements-aides',
     layout: {
-      'text-field': '{montant}k€',
+      'text-field': '{montantMillions} M€',
       'text-size': 14,
       visibility: 'none'
     }

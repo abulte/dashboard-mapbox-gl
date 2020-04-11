@@ -40,6 +40,23 @@ export default new Vuex.Store({
     setDepartements (state, data) {
       state.contours.departements = data
     },
+    setDepartementsAides (state, data) {
+      state.aidesGeo.departements.features = data.map(dep => {
+        const center = state.contours.centers[`DEP-${dep.dep}`]
+        return {
+          type: 'Feature',
+          properties: {
+            montantMillions: parseFloat((parseFloat(dep.montant) / 1000 / 1000).toFixed(2)),
+            montant: parseFloat(dep.montant),
+            nombre: dep.nombre
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: center
+          }
+        }
+      })
+    },
     setRegions (state, data) {
       state.contours.regions = data
     },
@@ -63,12 +80,13 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    getInitialData (context) {
+      return api.get('/geodata/centers.json').then(data => {
+        context.commit('setCenters', data)
+      })
+    },
     getRegionsData (context) {
       return Promise.all([
-        // TODO move to a top initData
-        api.get('/geodata/centers.json').then(data => {
-          context.commit('setCenters', data)
-        }),
         api.get('/geodata/regions-100m.geojson').then(data => {
           context.commit('setRegions', data)
         }),
@@ -81,6 +99,9 @@ export default new Vuex.Store({
       return Promise.all([
         api.get('/geodata/departements-100m.geojson').then(data => {
           context.commit('setDepartements', data)
+        }),
+        api.get('/data/aides-maille-departemental.json').then(data => {
+          context.commit('setDepartementsAides', data)
         })
       ])
     }
