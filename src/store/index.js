@@ -18,7 +18,7 @@ export default new Vuex.Store({
       },
       centers: []
     },
-    aides: {
+    aidesGeo: {
       departements: {
         type: 'FeatureCollection',
         features: []
@@ -27,6 +27,10 @@ export default new Vuex.Store({
         type: 'FeatureCollection',
         features: []
       }
+    },
+    aides: {
+      departements: [],
+      regions: []
     }
   },
   mutations: {
@@ -38,23 +42,44 @@ export default new Vuex.Store({
     },
     setRegions (state, data) {
       state.contours.regions = data
-      console.log('setRegions done', data)
+    },
+    setRegionsAides (state, data) {
+      state.aides.regions = data
+      state.aidesGeo.regions.features = data.map(reg => {
+        const center = state.contours.centers[`REG-${reg.reg}`]
+        return {
+          type: 'Feature',
+          properties: {
+            montantMillions: parseFloat((parseFloat(reg.montant) / 1000 / 1000).toFixed(2)),
+            montant: parseFloat(reg.montant),
+            nombre: reg.nombre
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: center
+          }
+        }
+      })
     }
   },
   actions: {
-    getInitialData (context) {
-      console.log('getInitialData launched')
+    getRegionsData (context) {
       return Promise.all([
+        // TODO move to a top initData
         api.get('/geodata/centers.json').then(data => {
-          console.log('got data for centers', data)
           context.commit('setCenters', data)
         }),
         api.get('/geodata/regions-100m.geojson').then(data => {
-          console.log('got data for regions', data)
           context.commit('setRegions', data)
         }),
+        api.get('/data/aides-maille-regional.json').then(data => {
+          context.commit('setRegionsAides', data)
+        })
+      ])
+    },
+    getDepartementsData (context) {
+      return Promise.all([
         api.get('/geodata/departements-100m.geojson').then(data => {
-          console.log('got data for departements', data)
           context.commit('setDepartements', data)
         })
       ])

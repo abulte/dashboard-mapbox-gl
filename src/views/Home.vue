@@ -30,6 +30,9 @@ export default {
     },
     centers () {
       return this.$store.state.contours.centers
+    },
+    aides () {
+      return this.$store.state.aidesGeo
     }
   },
   data () {
@@ -38,26 +41,13 @@ export default {
       hoveredStateId: {
         regions: null,
         departements: null
-      },
-      // dummy example data filled later
-      aides: {
-        departements: {
-          type: 'FeatureCollection',
-          features: []
-        },
-        regions: {
-          type: 'FeatureCollection',
-          features: []
-        }
       }
     }
   },
   methods: {
     loaded (_map) {
       map = _map
-      console.log('map loaded')
       this.loadingData.then(() => {
-        console.log('promise resolved')
         this.initMap()
       })
     },
@@ -156,7 +146,7 @@ export default {
     }
   },
   mounted () {
-    this.loadingData = this.$store.dispatch('getInitialData')
+    this.loadingData = this.$store.dispatch('getRegionsData')
   }
 }
 </script>

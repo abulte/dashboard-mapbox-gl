@@ -10,15 +10,12 @@ const fillPaint = {
 
 const circlePaintAides = {
   'circle-opacity': 0.6,
-  'circle-color': 'grey',
+  'circle-color': '#8393A7',
   'circle-radius': [
-    'interpolate',
-    ['linear'],
-    ['sqrt', ['number', ['get', 'montantAide']]],
-    0,
-    10,
-    100,
-    70
+    'interpolate', ['linear'],
+    ['*', ['sqrt', ['number', ['get', 'montantMillions']]], 10],
+    0, 10,
+    100, 70
   ]
 }
 
@@ -51,7 +48,7 @@ export const layers = {
     type: 'symbol',
     source: 'regions-aides',
     layout: {
-      'text-field': '{montantAide}k€',
+      'text-field': '{montantMillions} M€',
       'text-size': 14
     }
   },
@@ -85,7 +82,7 @@ export const layers = {
     type: 'symbol',
     source: 'departements-aides',
     layout: {
-      'text-field': '{montantAide}k€',
+      'text-field': '{montant}k€',
       'text-size': 14,
       visibility: 'none'
     }
