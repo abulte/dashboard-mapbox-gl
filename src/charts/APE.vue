@@ -21,7 +21,10 @@ export default {
           type: 'linear',
           position: 'left',
           ticks: {
-            beginAtZero: true
+            beginAtZero: true,
+            callback: (label, index, labels) => {
+              return `${label / 1000 / 1000} M€`
+            }
           }
         }, {
           id: 'nombres',

@@ -35,12 +35,12 @@ export default {
           {
             yAxisID: 'montants',
             label: 'Montant',
-            backgroundColor: '#f87979',
+            backgroundColor: '#004192',
             data: this.charts.ape.montants
           }, {
             yAxisID: 'nombres',
             label: 'Nombre',
-            backgroundColor: '#8f7979',
+            backgroundColor: '#D1335B',
             data: this.charts.ape.nombres
           }
         ]
