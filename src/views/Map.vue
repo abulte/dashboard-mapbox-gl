@@ -42,8 +42,8 @@ export default {
         regions: null
       },
       hoveredStateId: {
-        regions: null,
-        departements: null
+        departements: null,
+        regions: null
       }
     }
   },

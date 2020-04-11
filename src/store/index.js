@@ -30,7 +30,20 @@ export default new Vuex.Store({
     },
     aides: {
       departements: [],
-      regions: []
+      regions: [],
+      france: []
+    },
+    charts: {
+      ape: {
+        labels: [],
+        montants: [],
+        nombres: []
+      },
+      effectifs: {
+        labels: [],
+        montants: [],
+        nombres: []
+      }
     }
   },
   mutations: {
@@ -77,12 +90,23 @@ export default new Vuex.Store({
           }
         }
       })
+    },
+    setFrance (state, data) {
+      state.aides.france = data
+      state.charts.ape.labels = data.kpi_top_10_naf.map(d => d.libelle_division_naf)
+      state.charts.ape.montants = data.kpi_top_10_naf.map(d => d.montant)
+      state.charts.ape.nombres = data.kpi_top_10_naf.map(d => d.nombre)
     }
   },
   actions: {
     getInitialData (context) {
       return api.get('/geodata/centers.json').then(data => {
         context.commit('setCenters', data)
+      })
+    },
+    getFranceData (context) {
+      return api.get('/data/aides-maille-national.json').then(data => {
+        context.commit('setFrance', data[0])
       })
     },
     getRegionsData (context) {

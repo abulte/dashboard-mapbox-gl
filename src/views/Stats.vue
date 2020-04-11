@@ -1,12 +1,55 @@
 <template>
   <div class="stats-container">
     <h2>Stats</h2>
+    <div>
+      <h3>Montant</h3>
+      <span>{{ aides.france.montant }} €</span>
+    </div>
+    <div>
+      <h3>Nombre</h3>
+      <span>{{ aides.france.nombre }} aides</span>
+    </div>
+    <div class="charts-container">
+      <APE :chart-data="APEChartData"></APE>
+    </div>
   </div>
 </template>
 
 <script>
+import APE from '@/charts/APE.vue'
+
 export default {
-  name: 'Stats'
+  name: 'Stats',
+  components: { APE },
+  computed: {
+    aides () {
+      return this.$store.state.aides
+    },
+    charts () {
+      return this.$store.state.charts
+    },
+    APEChartData () {
+      return {
+        labels: this.charts.ape.labels,
+        datasets: [
+          {
+            yAxisID: 'montants',
+            label: 'Montant',
+            backgroundColor: '#f87979',
+            data: this.charts.ape.montants
+          }, {
+            yAxisID: 'nombres',
+            label: 'Nombre',
+            backgroundColor: '#8f7979',
+            data: this.charts.ape.nombres
+          }
+        ]
+      }
+    }
+  },
+  mounted () {
+    this.$store.dispatch('getFranceData')
+  }
 }
 </script>
 
