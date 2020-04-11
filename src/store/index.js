@@ -33,6 +33,11 @@ export default new Vuex.Store({
       regions: [],
       france: []
     },
+    stats: {
+      montant: 0,
+      nombre: 0,
+      level: ''
+    },
     charts: {
       ape: {
         labels: [],
@@ -54,6 +59,7 @@ export default new Vuex.Store({
       state.contours.departements = data
     },
     setDepartementsAides (state, data) {
+      state.aides.departements = data
       state.aidesGeo.departements.features = data.map(dep => {
         const center = state.contours.centers[`DEP-${dep.dep}`]
         return {
@@ -93,12 +99,65 @@ export default new Vuex.Store({
     },
     setFrance (state, data) {
       state.aides.france = data
-      state.charts.ape.labels = data.kpi_top_10_naf.map(d => d.libelle_division_naf)
-      state.charts.ape.montants = data.kpi_top_10_naf.map(d => d.montant)
-      state.charts.ape.nombres = data.kpi_top_10_naf.map(d => d.nombre)
+    },
+    setAPEChartData (state, { labels, montants, nombres }) {
+      state.charts.ape.labels = labels
+      state.charts.ape.montants = montants
+      state.charts.ape.nombres = nombres
+    },
+    setStats (state, { montant, nombre, level }) {
+      state.stats.montant = montant
+      state.stats.nombre = nombre
+      state.stats.level = level
     }
   },
   actions: {
+    setSelectedLevel ({ state, commit }, level) {
+      console.log(level)
+      // compute charts data based on selected
+      // better yet: watch a "selectedLevel" property and act on it
+      if (level === 'france') {
+        const aides = state.aides.france
+        commit('setAPEChartData', {
+          labels: aides.kpi_top_10_naf.map(d => d.libelle_division_naf),
+          montants: aides.kpi_top_10_naf.map(d => d.montant),
+          nombres: aides.kpi_top_10_naf.map(d => d.nombre)
+        })
+        commit('setStats', {
+          montant: aides.montant,
+          nombre: aides.nombre,
+          level: 'France'
+        })
+      // departement comes before region because we also get a click
+      // on region when clicking on departement (fix on map if possible)
+      } else if (level.startsWith('departement:')) {
+        const code = level.replace('departement:', '')
+        const aides = state.aides.departements.find(r => r.dep === code)
+        commit('setAPEChartData', {
+          labels: aides.kpi_top_10_naf.map(d => d.libelle_division_naf),
+          montants: aides.kpi_top_10_naf.map(d => d.montant),
+          nombres: aides.kpi_top_10_naf.map(d => d.nombre)
+        })
+        commit('setStats', {
+          montant: aides.montant,
+          nombre: aides.nombre,
+          level: `Département ${aides.libelle}`
+        })
+      } else if (level.startsWith('region:')) {
+        const code = level.replace('region:', '')
+        const aides = state.aides.regions.find(r => r.reg === code)
+        commit('setAPEChartData', {
+          labels: aides.kpi_top_10_naf.map(d => d.libelle_division_naf),
+          montants: aides.kpi_top_10_naf.map(d => d.montant),
+          nombres: aides.kpi_top_10_naf.map(d => d.nombre)
+        })
+        commit('setStats', {
+          montant: aides.montant,
+          nombre: aides.nombre,
+          level: `Région ${aides.libelle}`
+        })
+      }
+    },
     getInitialData (context) {
       return api.get('/geodata/centers.json').then(data => {
         context.commit('setCenters', data)

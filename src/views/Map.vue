@@ -105,6 +105,7 @@ export default {
       const regionCode = event.features[0].properties.code
       this.goToRegion(regionCode)
       this.toggleAidesVisibility('regions', false)
+      this.$store.dispatch('setSelectedLevel', `region:${regionCode}`)
     },
     toggleAidesVisibility (layer, isVisible) {
       const newVisibility = isVisible ? 'visible' : 'none'
@@ -127,7 +128,8 @@ export default {
       this.fit(data)
     },
     onDepartementClick (event) {
-      console.log(event)
+      const dptCode = event.features[0].properties.code
+      this.$store.dispatch('setSelectedLevel', `departement:${dptCode}`)
     },
     fit (geojson) {
       var _bbox = bbox(geojson)

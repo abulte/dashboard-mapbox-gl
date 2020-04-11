@@ -1,13 +1,13 @@
 <template>
   <div class="stats-container">
-    <h2>Stats</h2>
+    <h2>{{ stats.level }}</h2>
     <div>
       <h3>Montant</h3>
-      <span>{{ aides.france.montant }} €</span>
+      <span>{{ stats.montant }} €</span>
     </div>
     <div>
       <h3>Nombre</h3>
-      <span>{{ aides.france.nombre }} aides</span>
+      <span>{{ stats.nombre }} aides</span>
     </div>
     <div class="charts-container">
       <APE :chart-data="APEChartData"></APE>
@@ -22,6 +22,9 @@ export default {
   name: 'Stats',
   components: { APE },
   computed: {
+    stats () {
+      return this.$store.state.stats
+    },
     aides () {
       return this.$store.state.aides
     },
@@ -48,7 +51,9 @@ export default {
     }
   },
   mounted () {
-    this.$store.dispatch('getFranceData')
+    this.$store.dispatch('getFranceData').then(() => {
+      this.$store.dispatch('setSelectedLevel', 'france')
+    })
   }
 }
 </script>
