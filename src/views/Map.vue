@@ -1,5 +1,5 @@
 <template>
-  <div class="map-container">
+  <div class="map-container" :class="{container: this.$route.path === '/map'}">
     <mapbox
       accessToken=""
       :map-options="{

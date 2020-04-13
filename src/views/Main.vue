@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <Stats></Stats>
-    <Map></Map>
+    <Map v-if="$mq === 'big'"></Map>
   </div>
 </template>
 
@@ -15,7 +15,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 .container  {
   display: flex;
   position: absolute;
