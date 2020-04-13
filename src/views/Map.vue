@@ -82,10 +82,7 @@ export default {
       map.addSource('departements', {
         type: 'geojson',
         generateId: true,
-        data: {
-          type: 'FeatureCollection',
-          features: []
-        }
+        data: this.departements
       })
       map.addLayer(layers.departements)
       map.addLayer(layers.departementsLines)
@@ -104,28 +101,17 @@ export default {
     onRegionClick (event) {
       const regionCode = event.features[0].properties.code
       this.goToRegion(regionCode)
-      this.toggleAidesVisibility('regions', false)
       this.$store.dispatch('setSelectedLevel', `region:${regionCode}`)
-    },
-    toggleAidesVisibility (layer, isVisible) {
-      const newVisibility = isVisible ? 'visible' : 'none'
-      map.setLayoutProperty(`${layer}-aides`, 'visibility', newVisibility)
-      map.setLayoutProperty(`${layer}-aides-montants`, 'visibility', newVisibility)
     },
     goToRegion (code) {
       const departements = this.departements.features.filter(dpt => {
         return dpt.properties.region === code
       })
-      this.addDepartementsLayer(departements)
-    },
-    addDepartementsLayer (departements) {
-      const data = {
+      // FIXME: fit on region instead of department collection (perf)
+      this.fit({
         type: 'FeatureCollection',
         features: departements
-      }
-      map.getSource('departements').setData(data)
-      this.toggleAidesVisibility('departements', true)
-      this.fit(data)
+      })
     },
     onDepartementClick (event) {
       const dptCode = event.features[0].properties.code

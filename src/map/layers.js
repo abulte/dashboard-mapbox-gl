@@ -19,6 +19,9 @@ const circlePaintAides = {
   ]
 }
 
+// switch between facts on region / departement level
+const ZOOM_THRESHOLD = 6
+
 export const layers = {
   regions: {
     id: 'regions-fill',
@@ -39,7 +42,8 @@ export const layers = {
     id: 'regions-aides',
     type: 'circle',
     source: 'regions-aides',
-    paint: circlePaintAides
+    paint: circlePaintAides,
+    maxzoom: ZOOM_THRESHOLD
   },
   regionsAidesMontants: {
     id: 'regions-aides-montants',
@@ -48,13 +52,15 @@ export const layers = {
     layout: {
       'text-field': '{montantMillions} M€',
       'text-size': 14
-    }
+    },
+    maxzoom: ZOOM_THRESHOLD
   },
   departements: {
     id: 'departements-fill',
     type: 'fill',
     source: 'departements',
-    paint: fillPaint
+    paint: fillPaint,
+    minzoom: ZOOM_THRESHOLD
   },
   departementsLines: {
     id: 'departements-lines',
@@ -64,16 +70,15 @@ export const layers = {
     paint: {
       'line-color': '#627BC1',
       'line-width': 1
-    }
+    },
+    minzoom: ZOOM_THRESHOLD
   },
   departementsAides: {
     id: 'departements-aides',
     type: 'circle',
     source: 'departements-aides',
-    layout: {
-      visibility: 'none'
-    },
-    paint: circlePaintAides
+    paint: circlePaintAides,
+    minzoom: ZOOM_THRESHOLD
   },
   departementsAidesMontants: {
     id: 'departements-aides-montants',
@@ -81,8 +86,8 @@ export const layers = {
     source: 'departements-aides',
     layout: {
       'text-field': '{montantMillions} M€',
-      'text-size': 14,
-      visibility: 'none'
-    }
+      'text-size': 14
+    },
+    minzoom: ZOOM_THRESHOLD
   }
 }
