@@ -119,7 +119,7 @@ export default new Vuex.Store({
       if (level === 'france') {
         const aides = state.aides.france
         commit('setAPEChartData', {
-          labels: aides.kpi_top_10_naf.map(d => d.libelle_division_naf),
+          labels: aides.kpi_top_10_naf.map(d => d.libelle_section_naf),
           montants: aides.kpi_top_10_naf.map(d => d.montant),
           nombres: aides.kpi_top_10_naf.map(d => d.nombre)
         })
@@ -134,7 +134,7 @@ export default new Vuex.Store({
         const code = level.replace('departement:', '')
         const aides = state.aides.departements.find(r => r.dep === code)
         commit('setAPEChartData', {
-          labels: aides.kpi_top_10_naf.map(d => d.libelle_division_naf),
+          labels: aides.kpi_top_10_naf.map(d => d.libelle_section_naf),
           montants: aides.kpi_top_10_naf.map(d => d.montant),
           nombres: aides.kpi_top_10_naf.map(d => d.nombre)
         })
@@ -147,7 +147,7 @@ export default new Vuex.Store({
         const code = level.replace('region:', '')
         const aides = state.aides.regions.find(r => r.reg === code)
         commit('setAPEChartData', {
-          labels: aides.kpi_top_10_naf.map(d => d.libelle_division_naf),
+          labels: aides.kpi_top_10_naf.map(d => d.libelle_section_naf),
           montants: aides.kpi_top_10_naf.map(d => d.montant),
           nombres: aides.kpi_top_10_naf.map(d => d.nombre)
         })
@@ -164,7 +164,8 @@ export default new Vuex.Store({
       })
     },
     getFranceData (context) {
-      return api.get('/data/aides-maille-national.json').then(data => {
+      // return api.get('/data/aides-maille-national.json').then(data => {
+      return api.get('/data/sectionape/aide-maille-national.json').then(data => {
         context.commit('setFrance', data[0])
       })
     },
@@ -173,7 +174,8 @@ export default new Vuex.Store({
         api.get('/geodata/regions-100m.geojson').then(data => {
           context.commit('setRegions', data)
         }),
-        api.get('/data/aides-maille-regional.json').then(data => {
+        // api.get('/data/aides-maille-regional.json').then(data => {
+        api.get('/data/sectionape/aide-maille-regional.json').then(data => {
           context.commit('setRegionsAides', data)
         })
       ])
@@ -183,7 +185,8 @@ export default new Vuex.Store({
         api.get('/geodata/departements-100m.geojson').then(data => {
           context.commit('setDepartements', data)
         }),
-        api.get('/data/aides-maille-departemental.json').then(data => {
+        // api.get('/data/aides-maille-departemental.json').then(data => {
+        api.get('/data/sectionape/aide-maille-departemental.json').then(data => {
           context.commit('setDepartementsAides', data)
         })
       ])
